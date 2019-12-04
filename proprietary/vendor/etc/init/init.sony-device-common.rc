@@ -1,0 +1,78 @@
+# Copyright (c) 2017 Sony Mobile Communications Inc.
+#
+# product common configuration
+#
+service touch_id /vendor/bin/sh /vendor/bin/touch_id.sh
+    group system
+    user system
+    disabled
+    oneshot
+    seclabel u:r:touch_id:s0
+
+on early-init
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules/ \
+        fpc1145_platform.ko \
+        ldo_vibrator
+
+    write /sys/devices/soc/soc:fpc1145/uevent add
+
+on post-fs
+    chown system system /sys/devices/mdss_dsi_panel/panel_id
+
+on post-fs-data
+    # vibrator
+    chown system system /sys/class/leds/vibrator/play_mode
+    chown system system /sys/class/leds/vibrator/vmax_mv
+    chown system system /sys/class/leds/vibrator/wf_samp
+    chown system system /sys/class/leds/vibrator/wf_rep_count
+    chown system system /sys/class/leds/vibrator/wf_s_rep_count
+    chown system system /sys/class/leds/vibrator/lra_auto_mode
+
+    # Fingerprint data folder
+    mkdir /data/vendor/fpc 0770 system system
+
+    start touch_id
+
+on early-init && property:ro.vendor.nfc.ko=*
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules/ \
+        ${ro.vendor.nfc.ko}
+
+on boot && property:vendor.touch_id=4
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules/ \
+        clearpad_rmi_dev clearpad_core clearpad_i2c
+
+    chown system system /sys/devices/virtual/input/clearpad/fwrevision
+    chmod 0600 /sys/devices/virtual/input/clearpad/fwrevision
+    restorecon /sys/devices/virtual/input/clearpad/fwrevision
+    chown system system /sys/devices/virtual/input/clearpad/fwfamily
+    chmod 0600 /sys/devices/virtual/input/clearpad/fwfamily
+    restorecon /sys/devices/virtual/input/clearpad/fwfamily
+    chown system system /sys/devices/virtual/input/clearpad/fwstate
+    chmod 0600 /sys/devices/virtual/input/clearpad/fwstate
+    restorecon /sys/devices/virtual/input/clearpad/fwstate
+    chown system system /sys/devices/virtual/input/clearpad/fwinfo
+    chmod 0600 /sys/devices/virtual/input/clearpad/fwinfo
+    restorecon /sys/devices/virtual/input/clearpad/fwinfo
+
+    # Debug config for clearpad
+    chown system system /sys/devices/virtual/input/clearpad/hwtest
+    chmod 0600 /sys/devices/virtual/input/clearpad/hwtest
+    restorecon /sys/devices/virtual/input/clearpad/hwtest
+
+on boot && property:vendor.touch_id=8
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules/ \
+        synaptics_tcm_i2c synaptics_tcm_core synaptics_tcm_touch \
+        synaptics_tcm_device synaptics_tcm_testing synaptics_tcm_reflash \
+        synaptics_tcm_recovery synaptics_tcm_diagnostics
+
+    chown system system /sys/bus/platform/devices/synaptics_tcm.0/synaptics_tcm/reflash/config_id
+    chmod 0600 /sys/bus/platform/devices/synaptics_tcm.0/synaptics_tcm/reflash/config_id
+    restorecon /sys/bus/platform/devices/synaptics_tcm.0/synaptics_tcm/reflash/config_id
+
+# Touch
+on property:dev.bootcomplete=1 && property:vendor.smartstamina.touchreport=*
+   write /sys/devices/common_touch/touch/stamina_mode ${vendor.smartstamina.touchreport}
+
+# Set value in property to sysfs for SuperStamina
+on property:sys.lcd_fpks=* && property:vendor.backlight_on=1
+    write /sys/devices/mdss_dsi_panel/fps_mode ${sys.lcd_fpks}

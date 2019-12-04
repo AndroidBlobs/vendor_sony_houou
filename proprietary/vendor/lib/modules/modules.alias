@@ -1,0 +1,9 @@
+# Aliases extracted from modules themselves.
+alias of:N*T*Cfpc,fpc1145* fpc1145_platform
+alias of:N*T*Cfpc,fpc1020* fpc1145_platform
+alias of:N*T*Cldo-vibrator* ldo_vibrator
+alias i2c:cxd224x-i2c sony_carillon_nfc
+alias fs-texfat texfat
+alias of:N*T*Csynaptics,tcm-i2c* synaptics_tcm_i2c
+alias i2c:synaptics_tcm_i2c synaptics_tcm_i2c
+alias i2c:clearpad-i2c clearpad_i2c

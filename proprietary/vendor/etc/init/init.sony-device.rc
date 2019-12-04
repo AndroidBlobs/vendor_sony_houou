@@ -1,0 +1,12 @@
+# Copyright (c) 2017 Sony Mobile Communications Inc.
+#
+# product specific configuration
+#
+
+on post-fs-data
+    # FeliCa/NFC
+    chown nfc nfc /dev/cxd224x-i2c
+    chown nfc nfc /dev/bd7602-i2c
+
+on early-boot
+    exec u:r:vendor_snfcboot:s0 -- /vendor/bin/snfcboot
